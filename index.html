@@ -1,1 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>StudyKey — Keypoints & Mindmaps</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+  /* Inline minimal styling so it looks decent immediately */
+  :root{--accent:#4f46e5;--bg:#f7f7fb}
+  body{font-family:Inter,system-ui,Segoe UI,Roboto,Arial;margin:0;background:var(--bg);color:#111}
+  header{background:white;padding:18px 20px;box-shadow:0 6px 18px rgba(20,20,50,0.06);display:flex;gap:12px;align-items:center}
+  h1{margin:0;font-size:1.05rem}
+  main{max-width:880px;margin:36px auto;padding:20px}
+  .card{background:white;border-radius:12px;padding:20px;box-shadow:0 8px 30px rgba(10,10,40,0.05);transition:transform .25s ease, box-shadow .25s ease}
+  .card:hover{transform:translateY(-6px);box-shadow:0 18px 40px rgba(10,10,40,0.08)}
+  .selectors{display:flex;gap:10px;flex-wrap:wrap}
+  select{padding:10px;border-radius:8px;border:1px solid #e6e6ef;min-width:160px}
+  #result{margin-top:18px}
+  .kp{padding:12px;border-radius:8px;background:linear-gradient(180deg,rgba(79,70,229,0.08),rgba(79,70,229,0.03));border:1px solid rgba(79,70,229,0.06)}
+  /* small smooth fade-in */
+  .fade-in{opacity:0;transform:translateY(6px);animation:fadeIn .45s forwards}
+  @keyframes fadeIn{to{opacity:1;transform:none}}
+</style>
+</head>
+<body>
+<header>
+  <h1>StudyKey — Keypoints & Mindmaps</h1>
+</header>
+
+<main>
+  <div class="card">
+    <div style="margin-bottom:12px">
+      <strong>Select:</strong>
+    </div>
+
+    <div class="selectors">
+      <select id="classSelect" aria-label="Class">
+        <option value="">Class</option>
+        <option value="10">Class 10</option>
+        <option value="11">Class 11</option>
+      </select>
+
+      <select id="subjectSelect" aria-label="Subject">
+        <option value="">Subject</option>
+      </select>
+
+      <select id="chapterSelect" aria-label="Chapter">
+        <option value="">Chapter</option>
+      </select>
+
+      <button id="showBtn" style="padding:10px 14px;border-radius:8px;border:0;background:var(--accent);color:white;cursor:pointer">
+        Show Keypoints
+      </button>
+    </div>
+
+    <div id="result"></div>
+  </div>
+</main>
+
+<script>
+/* minimal data example — later replace with JSON files or fetch */
+const DATA = {
+  "10": {
+    "Science": {
+      "Chemical Reactions": {
+        "points":[
+          "Definition: A process where substances change to form new substances.",
+          "Types: Combination, Decomposition, Displacement, Double displacement.",
+          "Conservation of mass: mass of reactants = mass of products."
+        ],
+        "mindmap":"dia: draw central node 'Chemical Reactions' with branches: Types, Conservation of Mass, Examples"
+      },
+      "Light": {
+        "points":["Reflection and refraction basics","Laws of reflection","Images by plane mirrors"],
+        "mindmap":"dia: centre 'Light' → Reflection, Refraction, Lenses"
+      }
+    }
+  },
+  "11": {
+    "Math": {
+      "Limits": {
+        "points":["Behavior of function near a point","Limit notation and properties"],
+        "mindmap":"dia: centre 'Limits' → One-sided, Algebraic rules, L'Hospital"
+      }
+    }
+  }
+};
+
+const classSelect = document.getElementById('classSelect');
+const subjectSelect = document.getElementById('subjectSelect');
+const chapterSelect = document.getElementById('chapterSelect');
+const showBtn = document.getElementById('showBtn');
+const result = document.getElementById('result');
+
+classSelect.addEventListener('change', ()=> {
+  subjectSelect.innerHTML = '<option value="">Subject</option>';
+  chapterSelect.innerHTML = '<option value="">Chapter</option>';
+  const cls = classSelect.value;
+  if(!cls) return;
+  const subjects = Object.keys(DATA[cls]||{});
+  subjects.forEach(s => {
+    const o = document.createElement('option'); o.value = s; o.textContent = s;
+    subjectSelect.appendChild(o);
+  });
+});
+
+subjectSelect.addEventListener('change', ()=> {
+  chapterSelect.innerHTML = '<option value="">Chapter</option>';
+  const cls = classSelect.value;
+  const subj = subjectSelect.value;
+  if(!cls || !subj) return;
+  const chapters = Object.keys(DATA[cls][subj]||{});
+  chapters.forEach(ch => {
+    const o = document.createElement('option'); o.value = ch; o.textContent = ch;
+    chapterSelect.appendChild(o);
+  });
+});
+
+showBtn.addEventListener('click', ()=> {
+  const cls = classSelect.value, subj = subjectSelect.value, chap = chapterSelect.value;
+  result.innerHTML = '';
+  if(!cls || !subj || !chap){ result.innerHTML = '<div style="color:#9a9a9a;margin-top:12px">Select class, subject, and chapter.</div>'; return; }
+  const item = DATA[cls][subj][chap];
+  if(!item){ result.innerHTML = '<div style="color:#c44;margin-top:12px">No content yet — add notes in DATA.</div>'; return; }
+  const el = document.createElement('div'); el.className='fade-in';
+  el.innerHTML = `<h3 style="margin:0 0 8px">${chap}</h3>`;
+  const list = document.createElement('div');
+  item.points.forEach(p=>{
+    const d = document.createElement('div'); d.className='kp'; d.style.margin='8px 0'; d.textContent = p;
+    list.appendChild(d);
+  });
+  const dia = document.createElement('div'); dia.style.marginTop='12px'; dia.style.fontSize='0.95rem'; dia.style.color='#444';
+  dia.textContent = 'Mindmap: ' + (item.mindmap || 'No mindmap text');
+  el.appendChild(list); el.appendChild(dia);
+  result.appendChild(el);
+});
+</script>
+</body>
+</html>
 
